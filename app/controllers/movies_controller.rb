@@ -11,12 +11,22 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @movies = Movie.all
+    @all_ratings = Movie.uniq.pluck(:rating)
+    @checked_ratings = Array.new(@all_ratings)
+    if params.key? :ratings
+      keys = params[:ratings].keys
+      @checked_ratings = Array.new()
+      keys.each do |key|
+        @checked_ratings << key
+      end
+      puts @checked_ratings
+      @movies = @movies.where(:rating => keys)
+    end
     if params[:sort] == '1' then
-      @movies = Movie.order(:title).all
+      @movies = @movies.order(:title)
     elsif params[:sort] == '2' then
-      @movies = Movie.order(:release_date).all
-    else
-      @movies = Movie.all
+      @movies = @movies.order(:release_date)
     end
   end
 

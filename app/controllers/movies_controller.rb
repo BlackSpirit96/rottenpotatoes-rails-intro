@@ -11,22 +11,42 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    puts "###################"
+    puts session[:ratings]
+    puts session[:order]
+    puts "###################"
     @all_ratings = Movie.uniq.pluck(:rating)
     @checked_ratings = Array.new(@all_ratings)
+    keys = nil
     if params.key? :ratings
       keys = params[:ratings].keys
+      session[:ratings] = params[:ratings]
+    elsif session.key? :ratings
+      keys = session[:ratings].keys
+    end
+    if keys != nil then
       @checked_ratings = Array.new()
       keys.each do |key|
         @checked_ratings << key
       end
-      puts @checked_ratings
-      @movies = @movies.where(:rating => keys)
     end
-    if params[:sort] == '1' then
-      @movies = @movies.order(:title)
-    elsif params[:sort] == '2' then
-      @movies = @movies.order(:release_date)
+    if params.key? :sort then
+      if params[:sort] == '1' then
+        order = :title
+      elsif params[:sort] == '2' then
+        order = :release_date
+      end
+      session[:order] = order
+    else
+      order = session[:order]
+    end
+    
+    @movies = Movie.all
+    if order != nil then
+      @movies = @movies.order(order)
+    end
+    if keys != nil then
+      @movies = @movies.where(:rating => keys)
     end
   end
 

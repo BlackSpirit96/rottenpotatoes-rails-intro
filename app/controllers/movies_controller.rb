@@ -11,11 +11,11 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.uniq.pluck(:rating)
     puts "###################"
     puts session[:ratings]
     puts session[:order]
     puts "###################"
+    @all_ratings = Movie.uniq.pluck(:rating)
     @checked_ratings = Array.new(@all_ratings)
     keys = nil
     if params.key? :ratings
@@ -23,8 +23,6 @@ class MoviesController < ApplicationController
       session[:ratings] = params[:ratings]
     elsif session.key? :ratings
       keys = session[:ratings].keys
-    else
-      redirect_to movies_path(:ratings => session[:ratings])
     end
     if keys != nil then
       @checked_ratings = Array.new()
@@ -40,7 +38,7 @@ class MoviesController < ApplicationController
       end
       session[:sort] = order
     else
-      redirect_to movies_path(:sort => session[:order])
+      order = session[:sort]
     end
     
     @movies = Movie.all
@@ -49,6 +47,15 @@ class MoviesController < ApplicationController
     end
     if keys != nil then
       @movies = @movies.where(:rating => keys)
+    end
+    if (not params.key? :ratings or not params.key? :sort) then 
+      if (session.key? :ratings and session.key? :sort ) then
+        redirect_to movies_path(:sort => session[:sort], :ratings => session[:ratings])
+      elsif session.key? :ratings and not session.key? :sort then
+        redirect_to movies_path(:sort => 0, :ratings => session[:ratings])
+      elsif not session.key? :ratings and session.key? :sort then
+        redirect_to movies_path(:sort => session[:sort], :ratings => @all_ratings)
+      end
     end
   end
 
